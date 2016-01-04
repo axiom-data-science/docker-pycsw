@@ -1,4 +1,6 @@
-FROM debian:jessie
+FROM phusion/baseimage:0.9.18
+# Use baseimage-docker's init system
+CMD ["/sbin/my_init"]
 
 MAINTAINER Kyle Wilcox <kyle@axiomdatascience.com>
 ENV DEBIAN_FRONTEND noninteractive
@@ -15,17 +17,8 @@ RUN apt-get update && apt-get install -y \
     libxrender1 \
     pwgen \
     binutils \
-    curl \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-# Install gosu for easy step-down from root
-RUN gpg --keyserver pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4
-RUN curl -o /usr/local/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/1.2/gosu-$(dpkg --print-architecture)" \
-    && curl -o /usr/local/bin/gosu.asc -SL "https://github.com/tianon/gosu/releases/download/1.2/gosu-$(dpkg --print-architecture).asc" \
-    && gpg --verify /usr/local/bin/gosu.asc \
-    && rm /usr/local/bin/gosu.asc \
-    && chmod +x /usr/local/bin/gosu
 
 # Setup CONDA (https://hub.docker.com/r/continuumio/miniconda3/~/dockerfile/)
 ENV MINICONDA_VERSION 3.16.0
@@ -52,20 +45,32 @@ RUN conda develop .
 
 COPY default.cfg $PYCSW_ROOT/default.cfg
 
-# Setup SQLite database
-RUN python bin/pycsw-admin.py -c setup_db -f default.cfg
-
-# Setup XML record store
-ENV RECORDS_ROOT /records
-RUN mkdir -p $RECORDS_ROOT
-
 # Run pycsw as the 'pycsw' user
 RUN groupadd -r pycsw -g 1000
 RUN useradd -u 1000 -r -g pycsw -d $PYCSW_ROOT -s /bin/bash pycsw
 RUN chown -R pycsw:pycsw $PYCSW_ROOT
 
-COPY entrypoint.sh /
-ENTRYPOINT ["/entrypoint.sh"]
+# Setup XML record store
+ENV STORE_ROOT /store
+RUN mkdir -p $STORE_ROOT
+RUN chown -R pycsw:pycsw $STORE_ROOT
+
+# Setup XML record store
+ENV FORCE_ROOT /force
+RUN mkdir -p $FORCE_ROOT
+RUN chown -R pycsw:pycsw $FORCE_ROOT
+
+# Setup XML dump store
+ENV EXPORT_ROOT /export
+RUN mkdir -p $EXPORT_ROOT
+RUN chown -R pycsw:pycsw $EXPORT_ROOT
+
+# Setup crontab
+COPY crontab/* /etc/cron.d/
+COPY scripts/* /usr/local/bin/
+
+# Setup service
+RUN mkdir /etc/service/pycsw
+COPY pycsw.sh /etc/service/pycsw/run
 
 EXPOSE 8000
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "-w", "4", "--access-logfile", "-", "--error-logfile", "-", "pycsw.wsgi:application"]

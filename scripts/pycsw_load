@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd /opt/pycsw && \
+python bin/pycsw-admin.py -c load_records -r -f default.cfg -p /store
