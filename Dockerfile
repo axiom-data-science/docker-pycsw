@@ -36,7 +36,7 @@ RUN mkdir -p "$PYCSW_ROOT"
 WORKDIR $PYCSW_ROOT
 
 ENV PYCSW_VERSION master
-RUN conda config --add channels ioos
+RUN conda config --add channels conda-forge
 RUN git clone --branch $PYCSW_VERSION http://github.com/geopython/pycsw.git .
 RUN conda install --file requirements.txt
 RUN conda install --file requirements-standalone.txt
