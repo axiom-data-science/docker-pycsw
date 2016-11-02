@@ -84,3 +84,9 @@ COPY scripts/* /usr/local/bin/
 COPY pycsw.sh /etc/service/pycsw/run
 
 EXPOSE 8000
+
+# This is (hopefully) a temporary workaround.
+# libxml2 2.9.4 has a bug:
+#   * https://github.com/geopython/pycsw/issues/454
+#   * https://github.com/conda-forge/conda-forge.github.io/pull/260#event-844921779
+RUN conda install -c conda-forge libxml2==2.9.3
