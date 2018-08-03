@@ -7,13 +7,13 @@ exec /sbin/setuser pycsw pycsw_setup 2>&1 | logger -t pycsw_setup
 exec /sbin/setuser pycsw pycsw_load 2>&1 | logger -t pycsw_load
 
 # Force add any files in the force directory
-exec /sbin/setuser pycsw pycsw_force 2>&1 | logger -t pycsw_force
+exec /sbin/setuser root pycsw_force 2>&1 | logger -t pycsw_force
 
 # Optimize the DB
 exec /sbin/setuser pycsw pycsw_optimize 2>&1 | logger -t pycsw_optimize
 
 # Export the DB
-exec /sbin/setuser pycsw pycsw_export 2>&1 | logger -t pycsw_export
+exec /sbin/setuser root pycsw_export 2>&1 | logger -t pycsw_export
 
 # Run
 exec /sbin/setuser pycsw gunicorn \

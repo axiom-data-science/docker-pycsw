@@ -2,7 +2,7 @@ SHELL=/bin/bash
 PATH=/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # Force
-*/5 * * * * pycsw pycsw_force 2>&1 | logger -t pycsw_force
+*/5 * * * * root pycsw_force 2>&1 | logger -t pycsw_force
 
 # Load
 15 */1 * * * pycsw pycsw_load 2>&1 | logger -t pycsw_load
@@ -11,4 +11,4 @@ PATH=/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 30 */1 * * * pycsw pycsw_optimize 2>&1 | logger -t pycsw_optimize
 
 # Export
-45 */1 * * * pycsw pycsw_export 2>&1 | logger -t pycsw_export
+45 */1 * * * root pycsw_export 2>&1 | logger -t pycsw_export
