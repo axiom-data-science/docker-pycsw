@@ -5,28 +5,28 @@ MAINTAINER Kyle Wilcox <kyle@axiomdatascience.com>
 ENV DEBIAN_FRONTEND noninteractive
 ENV LANG C.UTF-8
 
-ENV PYTHON_VERSION 3.6
-ENV MINICONDA_VERSION latest
-
 ENV PYCSW_VERSION 2.2.0
 ENV PYCSW_ROOT /opt/pycsw
 ENV PYCSW_STORE_ROOT /store
 ENV PYCSW_FORCE_ROOT /force
 ENV PYCSW_EXPORT_ROOT /export
 ENV PYCSW_DB_ROOT /database
-ENV CONDA_ROOT /opt/conda
-ENV PATH ${CONDA_ROOT}/bin:$PATH
+ENV PYCSW_CONFIG ${PYCSW_ROOT}/default.cfg
 
 RUN apt-get update && apt-get install -y \
-        binutils \
         build-essential \
-        bzip2 \
         ca-certificates \
         git \
-        libglib2.0-0 \
-        libsm6 \
-        libxext6 \
-        libxrender1 \
+        libgeos-3.5.0 \
+        libgeos-dev \
+        libxml2 \
+        libxml2-dev \
+        libxslt-dev \
+        postgresql-server-dev-all \
+        python3 \
+        python3-dev \
+        python3-pip \
+        python3-setuptools \
         wget \
         && \
     apt-get clean && \
@@ -36,7 +36,6 @@ RUN apt-get update && apt-get install -y \
         ${PYCSW_FORCE_ROOT} \
         ${PYCSW_EXPORT_ROOT} \
         ${PYCSW_DB_ROOT} \
-        ${CONDA_ROOT} \
         /etc/service/pycsw \
         && \
     git clone --branch ${PYCSW_VERSION} http://github.com/geopython/pycsw.git ${PYCSW_ROOT} && \
@@ -48,51 +47,23 @@ RUN apt-get update && apt-get install -y \
         ${PYCSW_FORCE_ROOT} \
         ${PYCSW_EXPORT_ROOT} \
         ${PYCSW_DB_ROOT} \
-        ${CONDA_ROOT} \
         && \
-    echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh
+    cd ${PYCSW_ROOT} && \
+    pip3 install gunicorn sqlalchemy psycopg2 && \
+    python3 setup.py build && \
+    python3 setup.py install
 
-USER pycsw
-WORKDIR ${PYCSW_ROOT}
-
-RUN curl -k -o ./miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh && \
-    /bin/bash ./miniconda.sh -b -u -p ${CONDA_ROOT} && \
-    rm ./miniconda.sh && \
-    ${CONDA_ROOT}/bin/conda config \
-        --set always_yes yes \
-        --set changeps1 no \
-        --set show_channel_urls True \
-        && \
-    ${CONDA_ROOT}/bin/conda config \
-        --add channels conda-forge \
-        && \
-    ${CONDA_ROOT}/bin/conda install \
-        python==${PYTHON_VERSION} \
-        gunicorn \
-        "shapely<1.6" \
-        SQLAlchemy \
-        psycopg2 \
-        && \
-    ${CONDA_ROOT}/bin/conda install --only-deps \
-        pycsw==${PYCSW_VERSION} \
-        && \
-    ${CONDA_ROOT}/bin/pip install ${PYCSW_ROOT} && \
-    ${CONDA_ROOT}/bin/conda clean -a -y
-
+# Setup executable scripts
+COPY scripts/* /usr/local/bin/
+# Setup pycsw service
+COPY pycsw.sh /etc/service/pycsw/run
 # Setup pycsw config
-COPY default.cfg ${PYCSW_ROOT}/default.cfg
-
-USER root
+COPY default.cfg ${PYCSW_CONFIG}
 
 # Setup crontab
 COPY crontab/* /etc/cron.d/
 # Fix for hard-linked cron files
 RUN echo "#!/bin/bash\ntouch /etc/crontab /etc/cron.d/*" >> /etc/my_init.d/touch-crond && chmod 744 /etc/my_init.d/touch-crond
 
-# Setup executable scripts
-COPY scripts/* /usr/local/bin/
-
-# Setup pycsw service
-COPY pycsw.sh /etc/service/pycsw/run
-
+WORKDIR ${PYCSW_ROOT}
 EXPOSE 8000/TCP

@@ -1,4 +1,2 @@
 #!/bin/bash
-
-cd /opt/pycsw && \
-python bin/pycsw-admin.py -c optimize_db -f default.cfg
+pycsw-admin.py -c optimize_db -f "${PYCSW_CONFIG}"

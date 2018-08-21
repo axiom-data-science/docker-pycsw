@@ -55,6 +55,10 @@ $ docker run \
     axiom/docker-pycsw
 ```
 
+#### Optimize
+
+Every **1 hour (:30)** the `pycsw` database is optmized using `pycsw-admin.py -c optimize_db`
+
 
 #### `/export`
 

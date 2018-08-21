@@ -1,4 +1,2 @@
 #!/bin/bash
-
-cd /opt/pycsw && \
-python bin/pycsw-admin.py -c export_records -f default.cfg -p /export
+pycsw-admin.py -c export_records -f "${PYCSW_CONFIG}" -p /export
