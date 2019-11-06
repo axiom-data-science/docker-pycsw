@@ -1,4 +1,4 @@
-FROM phusion/baseimage:latest-amd64
+FROM phusion/baseimage:0.11
 CMD ["/sbin/my_init", "--quiet"]
 
 MAINTAINER Kyle Wilcox <kyle@axiomdatascience.com>
