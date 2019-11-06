@@ -1,14 +1,14 @@
-FROM phusion/baseimage:0.10.1
+FROM phusion/baseimage:0.11
 CMD ["/sbin/my_init", "--quiet"]
 
 MAINTAINER Kyle Wilcox <kyle@axiomdatascience.com>
 ENV DEBIAN_FRONTEND noninteractive
 ENV LANG C.UTF-8
 
-ENV PYTHON_VERSION 3.6
+ENV PYTHON_VERSION 3.7
 ENV MINICONDA_VERSION latest
 
-ENV PYCSW_VERSION 2.2.0
+ENV PYCSW_VERSION 2.4.1
 ENV PYCSW_ROOT /opt/pycsw
 ENV PYCSW_STORE_ROOT /store
 ENV PYCSW_FORCE_ROOT /force
@@ -69,7 +69,7 @@ RUN curl -k -o ./miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-${M
     ${CONDA_ROOT}/bin/conda install \
         python==${PYTHON_VERSION} \
         gunicorn \
-        "shapely<1.6" \
+        shapely \
         SQLAlchemy \
         psycopg2 \
         && \
