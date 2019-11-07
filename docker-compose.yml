@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+
+  db:
+    image: kartoza/postgis:11.0-2.5
+    stop_signal: SIGINT
+    environment:
+      POSTGRES_DBNAME: pycsw
+      POSTGRES_USER: pycsw
+      POSTGRES_PASS: pycsw
+    volumes:
+      - ./data/db:/var/lib/postgresql
+
+  web:
+    image: pycsw
+    build: .
+    volumes:
+      - ./postgres.cfg:/opt/pycsw/default.cfg
+      - ./data/force:/force
+      - ./data/export:/export
+      - ./data/store:/store
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
