@@ -1,33 +1,54 @@
 # pycsw on Docker
 
-### tl;dr
-
-**Quickstart**
+## Quickstart
 
 ```bash
-$ docker run \
-    -p 8000:8000 \
-    axiom/docker-pycsw
+$ docker run -p 8000:8000 axiom/docker-pycsw:latest
 ```
 
-**Production**
+## Production
 
-```bash
-$ docker run \
-    -d \
-    -p 8000:8000 \
-    -v /my/config.cfg:/opt/pycsw/default.cfg \
-    -v /my/force:/force \
-    -v /my/export:/export \
-    -v /my/store:/store \
-    -v /my/database:/database \
-    --name pycsw \
-    axiom/docker-pycsw
 ```
+# docker-compose.yml
+version: '3'
+
+services:
+
+  db:
+    image: kartoza/postgis:11.0-2.5
+    stop_signal: SIGINT
+    environment:
+      POSTGRES_DBNAME: pycsw
+      POSTGRES_USER: pycsw
+      POSTGRES_PASS: pycsw
+    volumes:
+      - ./data/db:/var/lib/postgresql
+
+  web:
+    image: axiom/docker-pycsw:latest
+    volumes:
+      - ./postgres.cfg:/opt/pycsw/default.cfg
+      - ./data/force:/force
+      - ./data/export:/export
+      - ./data/store:/store
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+```
+
+```shell
+$ docker-compose up -d db
+# wait 10 seconds
+$ docker-compose up -d web
+```
+
 
 ## Configuration
 
-The default configuration file is located [here](https://github.com/axiom-data-science/docker-pycsw/blob/master/default.cfg). Without configuring anything, the `pycsw` server will work on **localhost:8000**, however, it will not contain any useful metadata information about your instance.
+The default configuration file is located [here](https://github.com/axiom-data-science/docker-pycsw/blob/master/default.cfg). Without configuring anything, the `pycsw` server will work on **localhost:8000** and will use SQLite as the backing store, however, it will not contain any useful metadata information about your instance.
+
+There is also a postgres.cfg config file located [here](https://github.com/axiom-data-science/docker-pycsw/blob/master/postgres.cfg) that works with the `docker-compose.yml` file in this repository..
 
 To supply your own configuration file, mount a new configuration at `/opt/pycsw/default.cfg`
 
@@ -36,10 +57,11 @@ $ docker run \
     ...
     -v /my/config.cfg:/opt/pycsw/default.cfg \
     ...
-    axiom/docker-pycsw
+    axiom/docker-pycsw:latest
 ```
 
 See the [`pycsw` docs](http://docs.pycsw.org/en/latest/configuration.html) for more information.
+
 
 ### Volumes
 
@@ -52,7 +74,7 @@ $ docker run \
     ...
     -v /my/store:/store \
     ...
-    axiom/docker-pycsw
+    axiom/docker-pycsw:latest
 ```
 
 
@@ -65,7 +87,7 @@ $ docker run \
     ...
     -v /my/export:/export \
     ...
-    axiom/docker-pycsw
+    axiom/docker-pycsw:latest
 ```
 
 #### `/force`
@@ -77,7 +99,7 @@ $ docker run \
     ...
     -v /my/force:/force \
     ...
-    axiom/docker-pycsw
+    axiom/docker-pycsw:latest
 ```
 
 #### `/database`
@@ -89,5 +111,5 @@ $ docker run \
     ...
     -v /my/database:/database \
     ...
-    axiom/docker-pycsw
+    axiom/docker-pycsw:latest
 ```
